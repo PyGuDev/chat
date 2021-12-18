@@ -1,0 +1,11 @@
+from sqlalchemy.orm import Session
+
+from . import models, schemas
+
+
+def get_user(db: Session, user_id: str):
+    return db.query(models.User).filter(models.User.uid == user_id).first()
+
+
+def get_dialogs(db: Session):
+    return db.query(models.Dialog).all()
