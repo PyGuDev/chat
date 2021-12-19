@@ -1,14 +1,16 @@
 import uuid
 
-from fastapi import Depends
+import sqlalchemy
+from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
+from starlette import status
 
-from user.schemas import SingUp, SignIn, CreateUser, ResponseUser
 from core.auth.utils import get_password_hash
-from user.authenticate import authenticate, Token
 from core.utils import get_db
 from user import crud
+from user.authenticate import authenticate, Token, refresh_token
+from user.schemas import SingUp, SignIn, CreateUser, ResponseUser, RefreshToken
 
 router = APIRouter()
 
@@ -23,11 +25,24 @@ def register_user(item: SingUp, db: Session = Depends(get_db)):
         phone=item.phone,
         hashed_password=hashed_password
     )
-    user = crud.create_user(db, user)
+    try:
+        user = crud.create_user(db, user)
+    except sqlalchemy.exc.IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return user
 
 
 @router.post('/signin', response_model=Token)
 def login_user(item: SignIn, db: Session = Depends(get_db)):
     token = authenticate(db, item.phone, item.password)
+    return token
+
+
+@router.post('/refresh')
+def login_user(item: RefreshToken, db: Session = Depends(get_db)):
+    token = refresh_token(db, item.refresh_token)
     return token

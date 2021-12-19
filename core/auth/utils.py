@@ -21,6 +21,7 @@ def get_password_hash(password):
 
 def create_token(data: dict, expires_delta: Optional[timedelta] = None) -> Tuple[str, str]:
     to_encode = data.copy()
+
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -28,5 +29,19 @@ def create_token(data: dict, expires_delta: Optional[timedelta] = None) -> Tuple
     to_encode.update({"exp": expire})
     access_token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     to_encode.update({"token": access_token})
+    to_encode.pop("exp")
     refresh_token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return access_token, refresh_token
+
+
+def reverse_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    to_encode.pop("token")
+    access_token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+
+    return access_token

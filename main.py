@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from starlette.requests import Request
 from starlette.responses import Response
@@ -24,7 +25,7 @@ async def db_session_middleware(request: Request, call_next):
             request.state.user = user
         response = await call_next(request)
     except HTTPException as http_exc:
-        raise http_exc
+        response = Response(http_exc.detail, status_code=http_exc.status_code)
 
     finally:
         request.state.db.close()

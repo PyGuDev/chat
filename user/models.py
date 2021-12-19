@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 from core.db import Base
@@ -17,6 +17,7 @@ class User(Base):
 class Token(Base):
     __tablename__ = "token"
     uid = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("user.uid"))
     access_token = Column(String)
     refresh_token = Column(String)
     expires_date = Column(DateTime)

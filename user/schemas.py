@@ -9,6 +9,7 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+    expires_date: datetime
 
     class Config:
         orm_mode = True
@@ -17,10 +18,19 @@ class Token(BaseModel):
 class SavedToken(Token):
     uid: str
     expires_date: datetime
+    user_id: str
+
+
+class UpdateToken(Token):
+    expires_date: datetime
+
+
+class RefreshToken(BaseModel):
+    refresh_token: str
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 class User(BaseModel):
