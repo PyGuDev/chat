@@ -4,36 +4,27 @@ from sqlalchemy.orm import relationship
 from core.db import Base
 
 
-class User(Base):
-    __tablename__ = "user"
+class BaseModel:
     uid = Column(String, primary_key=True, index=True)
-    name = Column(String)
-    phone = Column(String)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
-    dialogs = relationship("UserDialog", back_populates="user")
 
 
-class Dialog(Base):
+class Dialog(BaseModel, Base):
     __tablename__ = "dialog"
-    uid = Column(String, primary_key=True, index=True)
     name = Column(String)
     messages = relationship("Message", back_populates="dialog")
     users = relationship("UserDialog", back_populates="dialog")
 
 
-class UserDialog(Base):
+class UserDialog(BaseModel, Base):
     __tablename__ = "user_dialog"
-    uid = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("user.uid"))
     user = relationship("User", back_populates="dialogs")
     dialog_id = Column(String, ForeignKey("dialog.uid"))
     dialog = relationship("Dialog", back_populates="users")
 
 
-class Message(Base):
+class Message(BaseModel, Base):
     __tablename__ = "message"
-    uid = Column(String, primary_key=True, index=True)
     text = Column(String)
     created_at = Column(DateTime)
     readed = Column(Boolean)

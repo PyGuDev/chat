@@ -11,3 +11,13 @@ services:
     
     volumes:
       - web-storage:/usr/src/app
+
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: chat_user
+      POSTGRES_DB: chat

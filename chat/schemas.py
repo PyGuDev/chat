@@ -1,21 +1,12 @@
+from uuid import UUID
 from datetime import datetime
 
 from pydantic import BaseModel
-from pydantic.types import UUID4
 from typing import Optional
 
 
-class User(BaseModel):
-    uid: UUID4
-    name: str
-    phone: str
-
-    class Config:
-        orm_mode = True
-
-
 class BaseDialog(BaseModel):
-    uid: UUID4
+    uid: UUID
     name: str
 
     class Config:
@@ -27,12 +18,12 @@ class ResponseDialog(BaseDialog):
 
 
 class Message(BaseModel):
-    dialog_uid: UUID4
+    dialog_uid: UUID
     text: str
     created_at: Optional[datetime]
     readed: Optional[bool]
     sended: Optional[bool]
-    author_uid: UUID4
+    author_uid: UUID
 
     class Config:
         orm_mode = True

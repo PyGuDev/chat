@@ -1,2 +1,3 @@
-from chat.models import User, Dialog, Message, UserDialog
+from chat.models import Dialog, Message, UserDialog
+from user.models import User, Token
 from .db import Base
