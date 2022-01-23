@@ -9,7 +9,7 @@ from starlette import status
 from core.auth.utils import get_password_hash
 from core.utils import get_db
 from user import crud
-from user.authenticate import authenticate, Token, refresh_token
+from user.authenticate import authenticate, Token, refresh
 from user.schemas import SingUp, SignIn, CreateUser, ResponseUser, RefreshToken
 
 router = APIRouter()
@@ -43,6 +43,6 @@ def login_user(item: SignIn, db: Session = Depends(get_db)):
 
 
 @router.post('/refresh')
-def login_user(item: RefreshToken, db: Session = Depends(get_db)):
-    token = refresh_token(db, item.refresh_token)
+def refresh_token(item: RefreshToken, db: Session = Depends(get_db)):
+    token = refresh(db, item.refresh_token)
     return token

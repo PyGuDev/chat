@@ -74,7 +74,7 @@ def authenticate(db: Session, username: str, password: str) -> Token:
             expires_date=expires_date,
             token_type='Bearer'
         )
-        token = update_token(db, token, token_from_model.uid)
+        update_token(db, token, token_from_model.uid)
     else:
         token = SavedToken(
             uid=uuid.uuid4().__str__(),
@@ -83,7 +83,7 @@ def authenticate(db: Session, username: str, password: str) -> Token:
             expires_date=expires_date,
             user_id=user.uid,
             token_type='Bearer')
-        token = save_token(db, token)
+        save_token(db, token)
 
     resp_token = Token(
         access_token=token.access_token,
@@ -119,7 +119,7 @@ def get_current_user(db: Session, token: str):
     return user
 
 
-def refresh_token(db: Session, refresh_token: str):
+def refresh(db: Session, refresh_token: str):
     payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[ALGORITHM])
     user_id: str = payload.get("sub")
     if user_id is None:

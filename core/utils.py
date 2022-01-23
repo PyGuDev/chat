@@ -6,4 +6,7 @@ def get_db(request: Request):
 
 
 def get_user_from_request(request: Request):
-    return request.state.user
+    if hasattr(request.state, 'user'):
+        return request.state.user
+    else:
+        return None
