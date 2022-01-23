@@ -7,6 +7,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 from starlette import status
 
+from chat.helpers import is_valid_user
 from chat.schemas import ResponseDialog, ResponseMessagesSchema, UserOrDialogSchema, ResponseDialogId, \
     CreateMessageSchema, Message
 from core.utils import get_db, get_user_from_request
@@ -21,6 +22,8 @@ def get_dialogs(db: Session = Depends(get_db), user=Depends(get_user_from_reques
     """
     Возвращаем список диалогов
     """
+    is_valid_user(user)
+
     dialogs = crud.get_dialogs(db, user.uid)
     for dialog in dialogs:
         for dialog_user in dialog.users:
@@ -37,6 +40,8 @@ def create_dialog(item: UserOrDialogSchema, db: Session = Depends(get_db), user=
      phone - номер телефона собеседника или
      dialog_id - индефикатор диалога
     """
+    is_valid_user(user)
+
     if item.phone is not None and item.dialog_id is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,6 +69,8 @@ def get_messages(dialog_id: str, db: Session = Depends(get_db), user=Depends(get
     """
     Возвращаем список диалогов
     """
+    is_valid_user(user)
+
     messages = crud.get_messages(db, dialog_id, user.uid)
     return messages
 
@@ -72,6 +79,9 @@ def get_messages(dialog_id: str, db: Session = Depends(get_db), user=Depends(get
 def create_message(
         dialog_id: str, message: CreateMessageSchema,
         db: Session = Depends(get_db), user=Depends(get_user_from_request)):
+
+    is_valid_user(user)
+
     message_data = Message(
         uid=uuid.uuid4().__str__(),
         text=message.text,
