@@ -10,7 +10,7 @@ class BaseModel:
 
 class Dialog(BaseModel, Base):
     __tablename__ = "dialog"
-    name = Column(String)
+    name = Column(String, nullable=True)
     messages = relationship("Message", back_populates="dialog")
     users = relationship("UserDialog", back_populates="dialog")
 
