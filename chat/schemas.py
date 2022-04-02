@@ -6,7 +6,7 @@ from typing import Optional
 
 class BaseDialog(BaseModel):
     uid: str
-    name: str
+    name: Optional[str]
 
     class Config:
         orm_mode = True
@@ -59,6 +59,7 @@ class ResponseMessagesSchema(BaseModel):
     created_at: Optional[datetime]
     readed: Optional[bool]
     author_id: str
+    me: bool
 
     class Config:
         orm_mode = True

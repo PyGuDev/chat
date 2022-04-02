@@ -1,6 +1,7 @@
 import uuid
 from typing import Optional, List
 
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -28,11 +29,11 @@ def create_user_dialog(db: Session, user_id: str, dialog_id: str):
     return user_dialog
 
 
-def get_messages(db: Session, dialog_id: str, user_id: str):
+def get_messages(db: Session, dialog_id: str, user_id: str) -> List[models.Message]:
     return db.query(models.Message).select_from(models.UserDialog).filter(
         models.Message.dialog_id == dialog_id,
         models.UserDialog.user_id == user_id
-        ).all()
+        ).order_by(desc(models.Message.created_at)).all()
 
 
 def create_message(db: Session, data: Message) -> models.Message:

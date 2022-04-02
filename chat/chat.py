@@ -13,8 +13,10 @@ from chat.schemas import ResponseDialog, ResponseMessagesSchema, UserOrDialogSch
 from core.utils import get_db, get_user_from_request
 from chat import crud
 from user import crud as crud_user
+from websocket.manager import ChannelManager
 
 router = APIRouter()
+channel_manager = ChannelManager()
 
 
 @router.get('/dialog', response_model=List[ResponseDialog])
@@ -49,6 +51,11 @@ def create_dialog(item: UserOrDialogSchema, db: Session = Depends(get_db), user=
         )
     else:
         if item.phone:
+            if item.phone == user.phone:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={'message': 'user with is phone not found'}
+                )
             companion = crud_user.get_user_by_phone(db, item.phone)
             if companion is None:
                 raise HTTPException(
@@ -60,7 +67,7 @@ def create_dialog(item: UserOrDialogSchema, db: Session = Depends(get_db), user=
             crud.create_user_dialog(db, companion.uid, dialog.uid)
             return ResponseDialogId(dialog_id=dialog.uid).dict()
         else:
-            crud.create_user_dialog(user.uid, item.dialog_id)
+            crud.create_user_dialog(db, user.uid, item.dialog_id)
             return ResponseDialogId(dialog_id=item.dialog_id).dict()
 
 
@@ -72,11 +79,16 @@ def get_messages(dialog_id: str, db: Session = Depends(get_db), user=Depends(get
     is_valid_user(user)
 
     messages = crud.get_messages(db, dialog_id, user.uid)
-    return messages
+    new_data = list()
+    for msg in messages:
+        copy_msg = msg.__dict__
+        copy_msg['me'] = False if msg.author_id == user.uid else True
+        new_data.append(copy_msg)
+    return new_data
 
 
 @router.post('/dialog/{dialog_id}/message', response_model=ResponseMessagesSchema)
-def create_message(
+async def create_message(
         dialog_id: str, message: CreateMessageSchema,
         db: Session = Depends(get_db), user=Depends(get_user_from_request)):
 
@@ -92,4 +104,12 @@ def create_message(
     )
 
     message = crud.create_message(db, message_data)
-    return message
+    msg_dict = message.__dict__
+    msg_dict['me'] = False if message.author_id == user.uid else True
+    response = ResponseMessagesSchema(**msg_dict)
+    try:
+        await channel_manager.send(dialog_id, response.json())
+    except Exception as exc:
+        print(f"send_message error: {exc}")
+    return response
+
