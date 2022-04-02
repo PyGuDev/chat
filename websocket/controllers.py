@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends
@@ -24,13 +25,16 @@ async def websocket_endpoint(
             await websocket.accept()
             await run_until_first_complete(
                 (ws_receiver, {"channel_name": dialog_id, "websocket": websocket}),
-                (ws_sender, {"channel_name": dialog_id, "websocket": websocket})
+                (ws_sender, {
+                    "channel_name": dialog_id,
+                    "user": user,
+                    "websocket": websocket
+                })
             )
 
         except WebSocketDisconnect:
             await websocket.close()
     else:
-        await websocket.send_text("Disconnect")
         await websocket.close()
 
 
@@ -41,11 +45,15 @@ async def ws_receiver(channel_name, websocket):
             await manager.send(channel_name, text_msg)
 
 
-async def ws_sender(channel_name, websocket):
+async def ws_sender(channel_name, user, websocket):
     channel = await manager.subscribe_channel(channel_name)
     while True:
         message = await channel.get_message()
         if message and message.get('data') != 1:
             text_message = message.get('data').decode('utf-8')
+            dict_message = json.loads(text_message)
+            if dict_message.get("author_id"):
+                dict_message['me'] = False if dict_message.get("author_id") == user.uid else True
+            text_message = json.dumps(dict_message)
             await websocket.send_text(text_message)
         await asyncio.sleep(0.01)

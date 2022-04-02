@@ -59,7 +59,7 @@ class ResponseMessagesSchema(BaseModel):
     created_at: Optional[datetime]
     readed: Optional[bool]
     author_id: str
-    me: bool
+    me: Optional[bool]
 
     class Config:
         orm_mode = True

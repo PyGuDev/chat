@@ -105,7 +105,6 @@ async def create_message(
 
     message = crud.create_message(db, message_data)
     msg_dict = message.__dict__
-    msg_dict['me'] = False if message.author_id == user.uid else True
     response = ResponseMessagesSchema(**msg_dict)
     try:
         await channel_manager.send(dialog_id, response.json())
