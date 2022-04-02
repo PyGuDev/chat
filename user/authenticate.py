@@ -120,7 +120,8 @@ class CredentialTokenError(HTTPException):
 
 def verify_token(token: str) -> TokenData:
     """Проверка access токена"""
-    token = token.strip('Bearer').strip(' ')
+    if "Bearer" in token:
+        token = token.strip('Bearer').strip(' ')
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
@@ -151,7 +152,8 @@ def authenticate_by_token_for_ws(db: Session, token: str) -> Optional[models.Use
     """
     try:
         return get_user_by_token(db, token)
-    except CredentialTokenError:
+    except CredentialTokenError as exc:
+        print(exc.status_code, exc.detail)
         return None
 
 
